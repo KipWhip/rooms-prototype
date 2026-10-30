@@ -1,0 +1,833 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Rooms · prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<style>
+:root{
+  --font:"Schibsted Grotesk", ui-sans-serif, sans-serif;
+  --t-xs:12px; --t-sm:14px; --t-md:16px; --t-lg:19px; --t-xl:24px; --t-2xl:32px;
+  --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:24px; --s6:32px; --s7:48px;
+  --r-sm:6px; --r-md:10px; --r-lg:14px;
+  --ground:#F3F5F3; --surface:#FFFFFF; --sunken:#EAEEEB;
+  --ink:#16201B; --ink-2:#4E5B54; --ink-3:#6B776F;
+  --border:#D9E0DB; --border-strong:#BCC7C0;
+  --accent:#12684E; --accent-hover:#0D5440; --accent-ink:#FFFFFF; --accent-tint:#E3F0EA; --accent-tint-ink:#0B4A37;
+  --fresh:#1D7A4C; --fresh-bg:#E2F2E8;
+  --aging:#8F5D00; --aging-bg:#FBF0D9;
+  --stale:#AE3B2B; --stale-bg:#FBE6E2;
+  --ease:cubic-bezier(0.16,1,0.3,1);
+  --shadow-pop:0 12px 32px -8px rgba(22,32,27,.22), 0 2px 6px rgba(22,32,27,.08);
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0;height:100%}
+body{font-family:var(--font);font-size:var(--t-md);line-height:1.5;color:var(--ink);background:var(--ground);-webkit-font-smoothing:antialiased;caret-color:var(--accent)}
+::selection{background:#BFE0D2;color:var(--ink)}
+a{color:var(--accent);text-underline-offset:3px}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+h1,h2,h3{margin:0;text-wrap:balance;letter-spacing:-0.02em}
+h1{font-size:var(--t-2xl);line-height:1.15;font-weight:700}
+h2{font-size:var(--t-lg);line-height:1.3;font-weight:650}
+h3{font-size:var(--t-md);font-weight:600}
+p{margin:0}
+.num{font-variant-numeric:tabular-nums}
+svg.lucide{width:18px;height:18px;stroke-width:1.75;flex:none}
+
+/* prototype bar */
+.protobar{position:fixed;inset:0 0 auto 0;height:36px;z-index:50;background:var(--ink);color:#DCE6E0;font-size:var(--t-xs);display:flex;align-items:center;gap:var(--s4);padding:0 var(--s4)}
+.protobar strong{color:#fff;font-weight:600;white-space:nowrap}
+.protobar .sp{flex:1}
+.protobar button{background:transparent;border:1px solid #3A4A42;color:#DCE6E0;border-radius:var(--r-sm);padding:3px 10px;cursor:pointer;font-size:var(--t-xs);display:inline-flex;gap:6px;align-items:center}
+.protobar button:hover{border-color:#6F8579;color:#fff}
+.protobar svg.lucide{width:14px;height:14px}
+
+/* shell */
+.shell{display:grid;grid-template-columns:252px 1fr;min-height:100vh;padding-top:36px}
+.side{position:sticky;top:36px;height:calc(100vh - 36px);overflow:auto;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:var(--s4) var(--s3)}
+.co{display:flex;align-items:center;gap:var(--s3);padding:var(--s2);border-radius:var(--r-md);cursor:pointer;border:0;background:none;width:100%;text-align:left}
+.co:hover{background:var(--sunken)}
+.co .mark{width:32px;height:32px;border-radius:8px;background:var(--accent);color:#fff;display:grid;place-items:center;font-weight:700;font-size:var(--t-sm)}
+.co .name{font-weight:600;font-size:var(--t-sm);line-height:1.2}
+.co .role{font-size:var(--t-xs);color:var(--ink-3)}
+.nav{margin-top:var(--s5);display:flex;flex-direction:column;gap:2px}
+.nav .label{font-size:var(--t-xs);color:var(--ink-3);padding:var(--s4) var(--s2) var(--s1);font-weight:500}
+.nav a{display:flex;align-items:center;gap:var(--s3);padding:7px var(--s2);border-radius:var(--r-sm);color:var(--ink-2);text-decoration:none;font-size:var(--t-sm);font-weight:500}
+.nav a:hover{background:var(--sunken);color:var(--ink)}
+.nav a[aria-current="page"]{background:var(--accent-tint);color:var(--accent-tint-ink)}
+.nav a .count{margin-left:auto;font-size:var(--t-xs);color:var(--ink-3)}
+.nav a .dot{margin-left:auto;width:8px;height:8px;border-radius:50%;background:var(--stale)}
+.side .foot{margin-top:auto;padding-top:var(--s4);border-top:1px solid var(--border);display:flex;flex-direction:column;gap:var(--s2)}
+.meter{font-size:var(--t-xs);color:var(--ink-2)}
+.meter .bar{height:6px;background:var(--sunken);border-radius:3px;margin-top:6px;overflow:hidden}
+.meter .bar i{display:block;height:100%;background:var(--accent);border-radius:3px}
+
+.main{min-width:0;display:flex;flex-direction:column}
+.top{position:sticky;top:36px;z-index:20;background:rgba(243,245,243,.94);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:var(--s4);padding:var(--s3) var(--s6);min-height:60px}
+.crumbs{display:flex;align-items:center;gap:6px;font-size:var(--t-sm);color:var(--ink-3);min-width:0}
+.crumbs a{color:var(--ink-2);text-decoration:none}
+.crumbs a:hover{text-decoration:underline}
+.crumbs svg.lucide{width:14px;height:14px}
+.top .sp{flex:1}
+.searchbtn{display:flex;align-items:center;gap:var(--s2);min-width:280px;padding:8px var(--s3);border:1px solid var(--border);background:var(--surface);border-radius:var(--r-md);color:var(--ink-3);font-size:var(--t-sm);cursor:pointer}
+.searchbtn:hover{border-color:var(--border-strong)}
+.searchbtn kbd{margin-left:auto;font:inherit;font-size:var(--t-xs);border:1px solid var(--border);border-radius:4px;padding:0 5px}
+.avatar{width:32px;height:32px;border-radius:50%;background:var(--sunken);display:grid;place-items:center;font-size:var(--t-xs);font-weight:600;color:var(--ink-2)}
+.page{padding:var(--s6) var(--s6) var(--s7);max-width:1180px;width:100%}
+
+/* buttons */
+.btn{display:inline-flex;align-items:center;gap:var(--s2);border-radius:var(--r-sm);padding:8px 14px;font-size:var(--t-sm);font-weight:600;border:1px solid var(--border);background:var(--surface);cursor:pointer;text-decoration:none;color:var(--ink);min-height:36px;transition:background .15s var(--ease),border-color .15s var(--ease)}
+.btn:hover{border-color:var(--border-strong);background:#FAFBFA}
+.btn:active{transform:translateY(1px)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.primary:hover{background:var(--accent-hover)}
+.btn.ghost{border-color:transparent;background:transparent;color:var(--ink-2)}
+.btn.ghost:hover{background:var(--sunken)}
+.btn.sm{padding:4px 10px;min-height:30px;font-size:var(--t-xs)}
+.btn[disabled]{opacity:.5;cursor:not-allowed}
+
+/* panels */
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg)}
+.pill{display:inline-flex;align-items:center;gap:5px;font-size:var(--t-xs);font-weight:600;padding:2px 8px;border-radius:999px;white-space:nowrap}
+.pill.fresh{background:var(--fresh-bg);color:var(--fresh)}
+.pill.aging{background:var(--aging-bg);color:var(--aging)}
+.pill.stale{background:var(--stale-bg);color:var(--stale)}
+.pill.neutral{background:var(--sunken);color:var(--ink-2)}
+.pill svg.lucide{width:12px;height:12px}
+.muted{color:var(--ink-2)}
+.small{font-size:var(--t-sm)}
+.xs{font-size:var(--t-xs)}
+
+/* setup checklist */
+.setup{padding:var(--s5);display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.5fr);gap:var(--s6);align-items:start}
+.setup .intro p{margin-top:var(--s2);color:var(--ink-2);font-size:var(--t-sm);max-width:44ch}
+.progress{display:flex;align-items:center;gap:var(--s3);margin-top:var(--s4);font-size:var(--t-sm);font-weight:600}
+.progress .track{flex:1;max-width:200px;height:8px;background:var(--sunken);border-radius:4px;overflow:hidden}
+.progress .track i{display:block;height:100%;background:var(--accent);transition:transform .5s var(--ease);transform-origin:left}
+.steps{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.step{display:grid;grid-template-columns:28px 1fr auto;gap:var(--s3);align-items:center;padding:var(--s3) 0;border-top:1px solid var(--border)}
+.step:first-child{border-top:0;padding-top:0}
+.step .chk{width:24px;height:24px;border-radius:50%;border:1.5px solid var(--border-strong);display:grid;place-items:center;background:var(--surface)}
+.step.done .chk{background:var(--accent);border-color:var(--accent);color:#fff}
+.step.done .chk svg{width:14px;height:14px;stroke-width:3}
+.step .t{font-weight:600;font-size:var(--t-sm)}
+.step.done .t{color:var(--ink-3);text-decoration:line-through;text-decoration-color:var(--border-strong)}
+.step .d{font-size:var(--t-xs);color:var(--ink-2);margin-top:2px}
+
+/* home */
+.home-head{display:flex;align-items:end;justify-content:space-between;gap:var(--s4);margin-bottom:var(--s5)}
+.cols{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:var(--s5);margin-top:var(--s5)}
+.sec-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--s3)}
+.list{list-style:none;margin:0;padding:0}
+.list li + li{border-top:1px solid var(--border)}
+.row{display:flex;align-items:center;gap:var(--s3);padding:var(--s3) var(--s4);text-decoration:none;color:inherit}
+a.row:hover{background:#F8FAF8}
+.list li:first-child .row{border-radius:var(--r-lg) var(--r-lg) 0 0}
+.list li:last-child .row{border-radius:0 0 var(--r-lg) var(--r-lg)}
+.row .main-t{font-weight:600;font-size:var(--t-sm)}
+.row .sub{font-size:var(--t-xs);color:var(--ink-3)}
+.row .grow{flex:1;min-width:0}
+.row .ic{width:32px;height:32px;border-radius:var(--r-sm);background:var(--sunken);display:grid;place-items:center;color:var(--ink-2)}
+.needs .ic{background:var(--stale-bg);color:var(--stale)}
+.rooms-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:var(--s3)}
+.roomcard{padding:var(--s4);text-decoration:none;color:inherit;display:flex;flex-direction:column;gap:var(--s2);transition:border-color .15s var(--ease)}
+.roomcard:hover{border-color:var(--border-strong)}
+.roomcard .meta{display:flex;gap:var(--s3);font-size:var(--t-xs);color:var(--ink-3);margin-top:auto;padding-top:var(--s2)}
+.roomcard p{font-size:var(--t-sm);color:var(--ink-2);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.roomcard.new{border-style:dashed;align-items:flex-start;justify-content:center;color:var(--ink-2);background:transparent}
+
+/* tips (feature highlight) */
+.tip{display:grid;grid-template-columns:auto 1fr auto;gap:var(--s3);align-items:start;background:var(--accent-tint);color:var(--accent-tint-ink);border-radius:var(--r-lg);padding:var(--s4);margin-bottom:var(--s5);animation:tipIn .5s var(--ease)}
+.tip .t{font-weight:650}
+.tip p{font-size:var(--t-sm);margin-top:2px;max-width:70ch}
+.tip .tryit{margin-top:var(--s3);display:flex;flex-wrap:wrap;gap:var(--s2);align-items:center;font-size:var(--t-xs)}
+@keyframes tipIn{from{transform:translateY(-6px)}to{transform:none}}
+
+/* say-this chip: the "two doors" link */
+.say{display:inline-flex;align-items:center;gap:var(--s2);background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);padding:6px 10px;font-size:var(--t-sm);cursor:pointer;color:var(--ink);text-align:left;transition:border-color .15s var(--ease)}
+.say:hover{border-color:var(--accent)}
+.says .say{justify-content:space-between}
+.show-sm{display:none}
+.say .q{color:var(--ink)}
+.say .c{color:var(--ink-3);display:inline-flex}
+.say.copied .c{color:var(--accent)}
+.say svg.lucide{width:14px;height:14px}
+
+/* room */
+.room-head{display:flex;justify-content:space-between;gap:var(--s5);align-items:flex-start;margin-bottom:var(--s5)}
+.room-head p{color:var(--ink-2);margin-top:var(--s2);max-width:62ch}
+.room-head .facts{display:flex;gap:var(--s4);margin-top:var(--s3);font-size:var(--t-xs);color:var(--ink-3);flex-wrap:wrap}
+.room-head .facts span{display:inline-flex;align-items:center;gap:5px}
+.room-head .facts svg.lucide{width:14px;height:14px}
+table.docs{width:100%;border-collapse:collapse;font-size:var(--t-sm)}
+table.docs th{text-align:left;font-weight:500;font-size:var(--t-xs);color:var(--ink-3);padding:var(--s3) var(--s4);border-bottom:1px solid var(--border)}
+table.docs td{padding:var(--s3) var(--s4);border-bottom:1px solid var(--border);vertical-align:middle}
+table.docs tr:last-child td{border-bottom:0}
+table.docs tbody tr{cursor:pointer}
+table.docs tbody tr:hover td{background:#F8FAF8}
+table.docs .folder td{background:var(--ground);font-size:var(--t-xs);font-weight:600;color:var(--ink-2);cursor:default;padding-top:var(--s2);padding-bottom:var(--s2)}
+table.docs .folder:hover td{background:var(--ground)}
+table.docs .title{font-weight:600;display:flex;align-items:center;gap:var(--s2)}
+.empty{padding:var(--s7) var(--s6);text-align:center;display:flex;flex-direction:column;align-items:center;gap:var(--s3)}
+.empty .ic{width:48px;height:48px;border-radius:50%;background:var(--sunken);display:grid;place-items:center;color:var(--ink-2)}
+.empty p{max-width:52ch;color:var(--ink-2);font-size:var(--t-sm)}
+.empty .says{display:flex;flex-direction:column;gap:var(--s2);margin-top:var(--s3);align-items:stretch;width:min(520px,100%)}
+
+/* doc */
+.doc-wrap{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:var(--s5);align-items:start}
+.docpaper{padding:var(--s7) var(--s7);min-height:600px}
+.docpaper .docmeta{display:flex;gap:var(--s2);align-items:center;margin-bottom:var(--s4);flex-wrap:wrap}
+.docpaper h1{font-size:36px;margin-bottom:var(--s4)}
+.docpaper .lede{font-size:var(--t-lg);color:var(--ink-2);max-width:62ch;line-height:1.5}
+.docpaper h2{margin-top:var(--s6);margin-bottom:var(--s2)}
+.docpaper p.b{max-width:68ch;margin-top:var(--s3)}
+.docpaper .sample{margin-top:var(--s6);font-size:var(--t-xs);color:var(--ink-3)}
+.rail{display:flex;flex-direction:column;gap:var(--s4);position:sticky;top:120px}
+.rail .panel{padding:var(--s4)}
+.facts-list{display:grid;grid-template-columns:auto 1fr;gap:var(--s2) var(--s4);font-size:var(--t-sm);margin-top:var(--s3)}
+.facts-list dt{color:var(--ink-3)}
+.facts-list dd{margin:0;text-align:right;font-weight:500}
+.warn{display:flex;gap:var(--s3);align-items:flex-start;background:var(--aging-bg);color:#5E3D00;border-radius:var(--r-md);padding:var(--s3);font-size:var(--t-sm)}
+.warn .btn{margin-top:var(--s2)}
+.okbox{display:flex;gap:var(--s3);align-items:center;background:var(--fresh-bg);color:#0E4A2D;border-radius:var(--r-md);padding:var(--s3);font-size:var(--t-sm)}
+
+/* drawer */
+.scrim{position:fixed;inset:0;background:rgba(22,32,27,.32);z-index:60;opacity:0;pointer-events:none;transition:opacity .25s var(--ease)}
+.scrim.on{opacity:1;pointer-events:auto}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(480px,100vw);background:var(--surface);z-index:61;box-shadow:var(--shadow-pop);transform:translateX(102%);transition:transform .35s var(--ease);display:flex;flex-direction:column}
+.drawer.on{transform:none}
+.drawer header{display:flex;align-items:center;justify-content:space-between;padding:var(--s4) var(--s5);border-bottom:1px solid var(--border)}
+.drawer .body{padding:var(--s5);overflow:auto;flex:1;display:flex;flex-direction:column;gap:var(--s4)}
+.drawer footer{padding:var(--s4) var(--s5);border-top:1px solid var(--border);display:flex;gap:var(--s2);justify-content:flex-end}
+.choice{display:grid;grid-template-columns:auto 1fr;gap:var(--s3);padding:var(--s4);border:1px solid var(--border);border-radius:var(--r-md);cursor:pointer;transition:border-color .15s var(--ease)}
+.choice:hover{border-color:var(--border-strong)}
+.choice:has(input:checked){border-color:var(--accent);background:#F6FBF8}
+.choice input{margin-top:4px;accent-color:var(--accent);width:16px;height:16px}
+.choice .t{font-weight:600;font-size:var(--t-sm);display:flex;gap:var(--s2);align-items:center}
+.choice .d{font-size:var(--t-xs);color:var(--ink-2);margin-top:2px}
+.choice .who{display:flex;gap:var(--s3);margin-top:var(--s2);font-size:var(--t-xs);color:var(--ink-3);flex-wrap:wrap}
+.choice .who span{display:inline-flex;gap:4px;align-items:center}
+.choice .who svg.lucide{width:12px;height:12px}
+.field{display:flex;flex-direction:column;gap:6px;font-size:var(--t-sm)}
+.field label{font-weight:600}
+.field input[type=text],.field input[type=email]{font:inherit;font-size:var(--t-md);padding:9px 12px;border:1px solid var(--border-strong);border-radius:var(--r-sm);background:var(--surface);color:var(--ink)}
+.field input::placeholder{color:#7A857E}
+.field .hint{font-size:var(--t-xs);color:var(--ink-3)}
+.toggle{display:flex;align-items:center;justify-content:space-between;gap:var(--s4);padding:var(--s3) 0;border-top:1px solid var(--border)}
+.toggle .t{font-weight:600;font-size:var(--t-sm)}
+.toggle .d{font-size:var(--t-xs);color:var(--ink-2)}
+.switch{appearance:none;width:40px;height:24px;border-radius:12px;background:var(--border-strong);position:relative;cursor:pointer;flex:none;transition:background .2s var(--ease)}
+.switch::after{content:"";position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;transition:transform .2s var(--ease)}
+.switch:checked{background:var(--accent)}
+.switch:checked::after{transform:translateX(16px)}
+.linkbox{display:flex;gap:var(--s2);align-items:center;background:var(--sunken);border-radius:var(--r-sm);padding:var(--s2) var(--s3);font-size:var(--t-sm);word-break:break-all}
+.linkbox code{flex:1;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px}
+
+/* ask */
+.askin{display:flex;gap:var(--s2);align-items:center;border:1px solid var(--border-strong);border-radius:var(--r-md);padding:var(--s2) var(--s3)}
+.askin input{flex:1;border:0;outline:0;font:inherit;font-size:var(--t-md);background:transparent;color:var(--ink);min-width:0}
+.askin:focus-within{border-color:var(--accent);outline:2px solid var(--accent-tint);outline-offset:1px}
+.hit{display:block;padding:var(--s3);border-radius:var(--r-md);text-decoration:none;color:inherit;border:1px solid var(--border)}
+.hit:hover{border-color:var(--border-strong)}
+.hit .t{font-weight:600;font-size:var(--t-sm)}
+.hit .s{font-size:var(--t-xs);color:var(--ink-2);margin-top:2px}
+.hit mark{background:var(--accent-tint);color:inherit;border-radius:2px}
+.answer-cta{border:1px dashed var(--border-strong);border-radius:var(--r-md);padding:var(--s4);display:flex;flex-direction:column;gap:var(--s3)}
+.answer-cta .row2{display:flex;justify-content:space-between;align-items:center;gap:var(--s3);flex-wrap:wrap}
+.answer{border-radius:var(--r-md);background:var(--ground);padding:var(--s4);font-size:var(--t-sm)}
+.answer p + p{margin-top:var(--s2)}
+.cite{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;border-radius:4px;background:var(--accent-tint);color:var(--accent-tint-ink);font-size:var(--t-xs);font-weight:700;margin:0 2px;vertical-align:1px;text-decoration:none}
+.seg{display:inline-flex;background:var(--sunken);border-radius:var(--r-sm);padding:3px}
+.seg button{border:0;background:transparent;padding:4px 10px;border-radius:4px;font-size:var(--t-xs);font-weight:600;cursor:pointer;color:var(--ink-2)}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgba(22,32,27,.12)}
+
+/* toast */
+.toast{position:fixed;bottom:var(--s5);left:50%;transform:translate(-50%,20px);opacity:0;background:var(--ink);color:#fff;padding:10px 16px;border-radius:var(--r-md);font-size:var(--t-sm);z-index:80;transition:all .3s var(--ease);display:flex;gap:var(--s2);align-items:center;pointer-events:none}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+
+/* design notes */
+.notes .note{display:grid;grid-template-columns:28px 1fr;gap:var(--s3);padding:var(--s3) 0;border-top:1px solid var(--border)}
+.notes .note:first-child{border-top:0}
+.notes .n{width:24px;height:24px;border-radius:50%;background:var(--ink);color:#fff;font-size:var(--t-xs);font-weight:700;display:grid;place-items:center}
+.notes .note .t{font-weight:600;font-size:var(--t-sm)}
+.notes .note p{font-size:var(--t-sm);color:var(--ink-2);margin-top:2px}
+.notes .why{font-size:var(--t-xs);color:var(--ink-3);margin-top:4px}
+
+/* connect */
+.connect-steps{counter-reset:c;list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:var(--s4)}
+.connect-steps li{display:grid;grid-template-columns:28px 1fr;gap:var(--s3);font-size:var(--t-sm)}
+.connect-steps li::before{counter-increment:c;content:counter(c);width:24px;height:24px;border-radius:50%;background:var(--sunken);display:grid;place-items:center;font-weight:700;font-size:var(--t-xs)}
+.status{display:flex;align-items:center;gap:var(--s2);font-size:var(--t-sm);font-weight:600}
+.spin{animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+@media (max-width:980px){
+  .cols,.doc-wrap,.setup{grid-template-columns:1fr}
+  .rail{position:static}
+}
+@media (max-width:760px){
+  .shell{grid-template-columns:1fr}
+  .side{position:static;height:auto;flex-direction:row;flex-wrap:wrap;align-items:center;padding:var(--s2) var(--s3);border-right:0;border-bottom:1px solid var(--border)}
+  .side .nav{flex-direction:row;margin:0;overflow-x:auto;width:100%}
+  .side .nav .label,.side .foot{display:none}
+  .side .nav a{white-space:nowrap}
+  .top{padding:var(--s3) var(--s4);top:36px}
+  .searchbtn{min-width:0}
+  .searchbtn span,.searchbtn kbd{display:none}
+  .page{padding:var(--s5) var(--s4) var(--s7)}
+  .docpaper{padding:var(--s5)}
+  .docpaper h1{font-size:28px}
+  table.docs .hide-sm{display:none}
+  .protobar .hide-sm{display:none}
+  .protobar .show-sm{display:inline}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<div class="protobar">
+  <strong>Rooms prototype</strong>
+  <span class="hide-sm">User-side UX ideas for the Rooms team. The company, rooms, documents, people and numbers are all sample data.</span>
+  <span class="sp"></span>
+  <button id="notesBtn"><i data-lucide="message-square-text"></i><span class="hide-sm">Design notes</span><span class="show-sm">Notes</span></button>
+  <button id="resetBtn"><i data-lucide="rotate-ccw"></i><span class="hide-sm">Start over as a new user</span><span class="show-sm">Reset</span></button>
+</div>
+
+<div class="shell">
+  <aside class="side">
+    <button class="co" title="Switch company">
+      <span class="mark">HP</span>
+      <span><span class="name">Harbor & Pine</span><br><span class="role">You're an admin</span></span>
+      <i data-lucide="chevrons-up-down" style="margin-left:auto;color:var(--ink-3)"></i>
+    </button>
+    <nav class="nav" id="nav"></nav>
+    <div class="foot">
+      <div class="meter" id="sideMeter"></div>
+      <a class="btn ghost sm" href="#/connect"><i data-lucide="plug"></i>Connect Claude</a>
+    </div>
+  </aside>
+
+  <div class="main">
+    <div class="top">
+      <div class="crumbs" id="crumbs"></div>
+      <span class="sp"></span>
+      <button class="searchbtn" id="openAsk"><i data-lucide="search"></i><span>Search or ask Harbor & Pine</span><kbd>/</kbd></button>
+      <div class="avatar" title="You">YO</div>
+    </div>
+    <main class="page" id="page"></main>
+  </div>
+</div>
+
+<div class="scrim" id="scrim"></div>
+<aside class="drawer" id="drawer" aria-hidden="true">
+  <header><h2 id="drawerTitle"></h2><button class="btn ghost sm" id="drawerClose" aria-label="Close"><i data-lucide="x"></i></button></header>
+  <div class="body" id="drawerBody"></div>
+  <footer id="drawerFoot"></footer>
+</aside>
+<div class="toast" id="toast"><i data-lucide="check"></i><span></span></div>
+
+<script>
+/* ---------- data: sample company ---------- */
+const DATA = {
+  rooms: [
+    { slug:"strategy", name:"Strategy", purpose:"Who we serve, what we sell and how we win. Read this before your first client call.", visibility:"Everyone in the company", docs:[
+      { slug:"handbook", title:"Company Handbook", owner:"maya", folder:null, rev:1, published:1, age:49, viewed:"today", verified:null },
+      { slug:"who-we-serve", title:"1. Who We Serve", owner:"me", folder:"Strategy Brief", rev:6, published:6, age:48, viewed:"6 weeks ago", verified:null, sharedAt:4 },
+      { slug:"what-we-sell", title:"2. What We Sell", owner:"me", folder:"Strategy Brief", rev:1, published:1, age:48, viewed:"6 weeks ago", verified:null },
+      { slug:"how-we-win", title:"3. How We Win", owner:"me", folder:"Strategy Brief", rev:1, published:1, age:48, viewed:"6 weeks ago", verified:null },
+    ]},
+    { slug:"getting-started", name:"Getting Started", purpose:"How to use your rooms. Start here.", visibility:"Everyone in the company", docs:[
+      { slug:"welcome", title:"Welcome: Field Guide", owner:"sam", folder:null, rev:1, published:null, age:49, viewed:null, verified:null },
+    ]},
+    { slug:"launch-plan", name:"Launch Plan", purpose:"", visibility:"Only invited people", docs:[], isNew:true },
+  ],
+  people: { "me":"You", "maya":"Maya Ng", "sam":"Sam Ortiz" },
+};
+const QUOTA = { used: 38, limit: 200 };
+
+/* ---------- state ---------- */
+const KEY = "rooms-proto-v1";
+const defaults = { setup:{connect:false, brand:false, firstDoc:true, share:false, invite:false}, setupHidden:false, tipsSeen:{}, quotaUsed:QUOTA.used, shareUpdated:false, verified:{}, published:{} };
+let S = load();
+function load(){ try{ return Object.assign(structuredClone(defaults), JSON.parse(localStorage.getItem(KEY))||{}); }catch(e){ return structuredClone(defaults); } }
+function save(){ localStorage.setItem(KEY, JSON.stringify(S)); }
+
+/* ---------- helpers ---------- */
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const icon = n => `<i data-lucide="${n}"></i>`;
+function room(slug){ return DATA.rooms.find(r => r.slug === slug); }
+function freshPill(d){
+  if (d.published == null && !S.published[d.slug]) return `<span class="pill stale">${icon("eye-off")}Not published</span>`;
+  if (d.age < 60) return `<span class="pill fresh">${icon("leaf")}Fresh · ${d.age}d</span>`;
+  if (d.age < 120) return `<span class="pill aging">${icon("hourglass")}Aging · ${d.age}d</span>`;
+  return `<span class="pill stale">${icon("alert-triangle")}Stale · ${d.age}d</span>`;
+}
+function who(o){ return DATA.people[o] || o; }
+function say(text){ return `<button class="say" data-say="${esc(text)}" title="Copy, then paste into Claude"><span class="q">“${esc(text)}”</span><span class="c">${icon("copy")}</span></button>`; }
+function toast(msg){ const t=$("#toast"); t.querySelector("span").textContent=msg; t.classList.add("on"); clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove("on"),2200); }
+function setupDone(){ return Object.values(S.setup).filter(Boolean).length; }
+function allDocs(){ return DATA.rooms.flatMap(r => r.docs.map(d => ({...d, room:r}))); }
+function needsYou(){
+  const out = [];
+  allDocs().forEach(d => {
+    if (d.published == null && !S.published[d.slug]) out.push({d, icon:"eye-off", t:`“${d.title}” was never published`, s:`Nobody can read it yet. Owner: ${who(d.owner)}. It's the first thing new people are meant to see.`});
+  });
+  if (!S.shareUpdated) out.push({d:allDocs().find(x=>x.slug==="who-we-serve"), icon:"link-2-off", t:"A share link shows an old version", s:"“1. Who We Serve” link still shows v4. You've published v6 since."});
+  const unv = allDocs().filter(d => d.published && !S.verified[d.slug]).length;
+  if (unv) out.push({href:"#/health", icon:"badge-check", t:`${unv} documents have never been verified`, s:"Verifying tells readers a person checked the content is still true."});
+  return out;
+}
+
+/* ---------- tips (feature highlights on first visit) ---------- */
+const TIPS = {
+  home:   { t:"This is your company's front page", p:"Everything you write in Claude lands in a room here. Use the checklist to get set up, and check “Needs you” for anything that's waiting on you.", say:["Show me what changed in Harbor & Pine this week"] },
+  room:   { t:"A room is a shared shelf", p:"Everyone with access to the room sees the same documents. Fresh, aging and stale tell readers how much to trust each document.", say:["Add a one-page summary to this room","Who owns the documents in Strategy?"] },
+  doc:    { t:"Readers see this page; Claude edits it", p:"To change this document, ask Claude. Share it from here. The panel on the right shows who owns it, how current it is and who has a link.", say:["Update “1. Who We Serve” with our new pricing"] },
+  shares: { t:"Every link you've sent, in one list", p:"Share links show the version you shared. When you publish a newer one, the link turns yellow so you can update it or leave it as it is.", say:["List my shared links"] },
+  health: { t:"Health finds what's going out of date", p:"Rooms flags documents nobody owns, nobody has verified or nobody has read, so stale content gets fixed before someone acts on it.", say:["Which Harbor & Pine docs are going stale?"] },
+};
+function tip(key){
+  if (S.tipsSeen[key]) return "";
+  const t = TIPS[key];
+  return `<div class="tip" role="note">
+    ${icon("lightbulb")}
+    <div><div class="t">${t.t}</div><p>${t.p}</p>
+      <div class="tryit"><span>Try in Claude:</span>${t.say.map(say).join("")}</div></div>
+    <button class="btn ghost sm" data-tip="${key}">Got it</button>
+  </div>`;
+}
+
+/* ---------- design notes per screen ---------- */
+const NOTES = {
+  home: [
+    ["First-run checklist","Five steps from invite to first value, with progress. It hides itself when done and can be dismissed earlier.","Review: getting set up takes 4–6 steps, with no guidance in the app."],
+    ["“Needs you” list","Turns content health into a to-do list on the home page instead of a report you have to go and find.","The Welcome Field Guide has never been published or viewed. Nothing in the product tells anyone."],
+    ["Tips on first visit","Each section explains itself once, in one sentence, with a prompt to try in Claude. You can bring them back with “Start over”.","Meeting note: feature highlight as you go."],
+    ["Ask meter in the sidebar","Everyone sees how many written answers are left this month.","Ask runs on a large model on the server, so every answer has a real cost."],
+  ],
+  room: [
+    ["Freshness in plain words","“Fresh · 48d” replaces a bare date, so readers can see how much to trust a document before they open it.",""],
+    ["Folders as table groups","Folders show as group headers in one list rather than separate pages, so you don't have to click through.",""],
+    ["Empty rooms teach the two doors","An empty room gives you prompts to copy into Claude instead of a blank page. See Launch Plan.","Bridges “write in Claude, read in the browser.”"],
+  ],
+  doc: [
+    ["Trust panel","Owner, freshness, verification, version and links sit beside the document. “Mark as verified” is one click.",""],
+    ["Out-of-date link warning","The doc tells you when a share link shows an older version and offers to update it.","Today, links are snapshots and fall behind without warning."],
+    ["Edit in Claude, visibly","The page tells you that changes happen in Claude and gives you a prompt to copy.",""],
+  ],
+  share: [
+    ["Three ways to share, side by side","Anyone with the link, email to view, or invite to the room. Each option says who needs to sign in and whether the reader sees updates.","Meeting question: does someone need an email to view?"],
+    ["New: email to view","The middle option. The reader enters an email to open the document, with no code. You see who read it.","The standard for sales decks and investor docs (DocSend style)."],
+    ["Link updates on publish","A toggle on every link chooses between always showing the latest version and staying on the version you shared.",""],
+  ],
+  ask: [
+    ["Search first, answers on request","Typing runs search, which is instant and costs nothing. A written answer takes a deliberate click and shows what's left of the quota.","Cost control for server-side Opus."],
+    ["Quick or thorough","Quick answers use a cheaper model and are the default. Thorough answers use Opus and count as 3 against the quota.",""],
+    ["Cited answers","Every claim links to the document it came from.",""],
+  ],
+  shares: [["One list of every link","Version drift is highlighted, and each link can be updated or revoked in one click.",""]],
+  health: [["Health as fixes","Every issue comes with the action that fixes it, inline.",""]],
+  connect: [["Connecting is one screen","Copy the address, paste it into Claude, and test the connection. Rooms confirms when it hears from Claude.","Getting listed in Anthropic's connector directory would remove the paste step."]],
+};
+let currentNotes = "home";
+
+/* ---------- views ---------- */
+function viewHome(){
+  currentNotes = "home";
+  const done = setupDone(), total = Object.keys(S.setup).length;
+  const steps = [
+    ["connect","Connect Claude","Add the Rooms connector so Claude can write here.","#/connect","Connect"],
+    ["brand","Set your brand","Logo, colors and fonts, applied to every document.",null,"Set brand"],
+    ["firstDoc","Create your first document","Done: “Company Handbook” was written by Maya Ng.",null,null],
+    ["share","Share something","Send one document to someone outside the company.","#/doc/strategy/who-we-serve?share=1","Share a doc"],
+    ["invite","Invite a teammate","Rooms works best when the team reads from it too.",null,"Invite"],
+  ];
+  const showSetup = !S.setupHidden && done < total;
+  const needs = needsYou();
+  return `
+  ${tip("home")}
+  <div class="home-head">
+    <div><h1>Harbor & Pine</h1><p class="muted" style="margin-top:6px">3 rooms · 5 documents · 4 people</p></div>
+    <button class="btn primary" data-act="newroom">${icon("plus")}New room</button>
+  </div>
+  ${showSetup ? `<section class="panel setup" aria-label="Setup checklist">
+    <div class="intro"><h2>Finish setting up</h2>
+      <p>A few steps and your team can read, trust and share what Claude writes.</p>
+      <div class="progress"><span class="num">${done} of ${total}</span><span class="track"><i style="transform:scaleX(${done/total})"></i></span></div>
+      <button class="btn ghost sm" style="margin-top:var(--s4);margin-left:-10px" data-act="hidesetup">Hide for now</button>
+    </div>
+    <ol class="steps">${steps.map(([k,t,d,href,cta]) => `
+      <li class="step ${S.setup[k]?"done":""}">
+        <span class="chk">${S.setup[k]?icon("check"):""}</span>
+        <div><div class="t">${t}</div><div class="d">${d}</div></div>
+        ${S.setup[k] ? "" : href ? `<a class="btn sm" href="${href}">${cta}</a>` : cta ? `<button class="btn sm" data-step="${k}">${cta}</button>` : ""}
+      </li>`).join("")}</ol>
+  </section>` : ""}
+  <div class="cols">
+    <section>
+      <div class="sec-h"><h2>Needs you</h2><span class="xs muted num">${needs.length} open</span></div>
+      ${needs.length ? `<ul class="list panel needs">${needs.map(n => `<li><a class="row" href="${n.href || `#/doc/${n.d.room.slug}/${n.d.slug}`}"><span class="ic">${icon(n.icon)}</span><span class="grow"><span class="main-t">${n.t}</span><br><span class="sub">${n.s}</span></span>${icon("chevron-right")}</a></li>`).join("")}</ul>`
+      : `<div class="panel okbox" style="border:0">${icon("check-circle-2")}Nothing is waiting on you. Everything is published, verified and current.</div>`}
+      <div class="sec-h" style="margin-top:var(--s6)"><h2>Rooms</h2></div>
+      <div class="rooms-grid">${DATA.rooms.map(r => `
+        <a class="panel roomcard" href="#/room/${r.slug}">
+          <h3>${esc(r.name)}</h3>
+          <p>${r.purpose ? esc(r.purpose) : "<em>No documents yet</em>"}</p>
+          <div class="meta"><span class="num">${r.docs.length} docs</span><span>${r.visibility==="Only invited people"?"Invite only":"Company"}</span></div>
+        </a>`).join("")}
+        <button class="panel roomcard new" data-act="newroom">${icon("plus")}<span class="small" style="font-weight:600">New room</span><span class="xs">A shelf for one client, project or team.</span></button>
+      </div>
+    </section>
+    <section>
+      <div class="sec-h"><h2>Recently read</h2></div>
+      <ul class="list panel">${allDocs().filter(d=>d.viewed).map(d => `<li><a class="row" href="#/doc/${d.room.slug}/${d.slug}"><span class="ic">${icon("file-text")}</span><span class="grow"><span class="main-t">${esc(d.title)}</span><br><span class="sub">${esc(d.room.name)} · read ${d.viewed}</span></span></a></li>`).join("")}</ul>
+      <div class="sec-h" style="margin-top:var(--s6)"><h2>Write something</h2></div>
+      <div class="panel" style="padding:var(--s4);display:flex;flex-direction:column;gap:var(--s2)">
+        <p class="small muted">Claude writes it, Rooms keeps it. Copy a prompt and paste it into Claude:</p>
+        ${say("Write a one-page launch plan for Harbor & Pine and save it to Launch Plan")}
+        ${say("Turn the Strategy brief into a 6-slide deck")}
+      </div>
+    </section>
+  </div>`;
+}
+
+function viewRoom(slug){
+  const r = room(slug); if(!r) return notFound();
+  currentNotes = "room";
+  if (!r.docs.length) return `
+    <div class="room-head"><div><h1>${esc(r.name)}</h1>
+      <div class="facts"><span>${icon("lock")}Only invited people</span><span>${icon("user")}Owner: You</span></div></div>
+      <button class="btn" data-act="share-room">${icon("user-plus")}Invite</button></div>
+    <section class="panel empty">
+      <span class="ic">${icon("pen-line")}</span>
+      <h2>This room is empty, and that's fine</h2>
+      <p>Documents get here from Claude. Copy one of these, paste it into Claude, and the document will appear here when Claude saves it.</p>
+      <div class="says">
+        ${say("Write a 30/60/90-day launch plan for Harbor & Pine in the Launch Plan room")}
+        ${say("Summarise the Strategy brief into a one-page launch checklist for Launch Plan")}
+        ${say("Create a website copy draft for knowledgerooms.ai in Launch Plan")}
+      </div>
+      <a href="#/connect" class="small" style="margin-top:var(--s3)">Claude isn't connected yet? Connect it in about a minute.</a>
+    </section>`;
+  const groups = {};
+  r.docs.forEach(d => (groups[d.folder || ""] ||= []).push(d));
+  return `
+  ${tip("room")}
+  <div class="room-head">
+    <div><h1>${esc(r.name)}</h1><p>${esc(r.purpose)}</p>
+      <div class="facts"><span>${icon("building-2")}${r.visibility}</span><span class="num">${icon("files")}${r.docs.length} documents</span></div></div>
+    <div style="display:flex;gap:var(--s2)"><button class="btn" data-act="share-room">${icon("user-plus")}Invite</button></div>
+  </div>
+  <div class="panel" style="overflow:hidden">
+  <table class="docs">
+    <thead><tr><th>Document</th><th class="hide-sm">Owner</th><th>Freshness</th><th class="hide-sm">Last read</th></tr></thead>
+    <tbody>${Object.entries(groups).map(([f, ds]) => `
+      ${f ? `<tr class="folder"><td colspan="4"><span style="display:inline-flex;gap:6px;align-items:center">${icon("folder")}${esc(f)}</span></td></tr>` : ""}
+      ${ds.map(d => `<tr data-href="#/doc/${r.slug}/${d.slug}">
+        <td><span class="title">${icon("file-text")}<a href="#/doc/${r.slug}/${d.slug}" style="color:inherit;text-decoration:none">${esc(d.title)}</a></span></td>
+        <td class="hide-sm muted">${who(d.owner)}</td>
+        <td>${freshPill(d)}</td>
+        <td class="hide-sm muted">${d.viewed ? d.viewed : "Never"}</td></tr>`).join("")}`).join("")}
+    </tbody>
+  </table></div>`;
+}
+
+const BODY = {
+  "who-we-serve": { lede:"We help independent clinics fill their calendars without discounting.", secs:[["Who buys","Clinic owners with two to six practitioners who already have a booking system and a waitlist they never use."],["What they say","\"We're full on Tuesdays and empty on Fridays.\" Every first call starts there."]] },
+};
+function viewDoc(rs, ds, q){
+  const r = room(rs); const d = r && r.docs.find(x => x.slug === ds); if(!d) return notFound();
+  currentNotes = "doc";
+  const b = BODY[d.slug] || { lede:"Document body goes here. This prototype shows the frame around the document, not its content.", secs:[] };
+  const isPub = d.published != null || S.published[d.slug];
+  const ver = S.verified[d.slug];
+  setTimeout(() => { if (q.share) openShare(d); }, 50);
+  return `
+  ${tip("doc")}
+  <div class="doc-wrap">
+    <article class="panel docpaper">
+      <div class="docmeta">${freshPill(d)} ${ver ? `<span class="pill fresh">${icon("badge-check")}Verified today</span>` : ""}</div>
+      <h1>${esc(d.title)}</h1>
+      <p class="lede">${esc(b.lede)}</p>
+      ${b.secs.map(([h,p]) => `<h2>${h}</h2><p class="b">${p}</p>`).join("")}
+      <p class="sample">Document text is a short placeholder for the prototype. The real document lives in Harbor & Pine › ${esc(r.name)}.</p>
+    </article>
+    <aside class="rail">
+      <div style="display:flex;gap:var(--s2)">
+        <button class="btn primary" style="flex:1;justify-content:center" data-act="share">${icon("send")}Share</button>
+        <button class="btn" data-act="openask" title="Ask about this document">${icon("message-circle-question")}</button>
+      </div>
+      ${!isPub ? `<div class="warn">${icon("eye-off")}<div><strong>Not published.</strong> Only editors can see this draft.<br><button class="btn sm" data-act="publish">Publish v1</button></div></div>` : ""}
+      ${d.sharedAt && !S.shareUpdated ? `<div class="warn">${icon("link-2-off")}<div><strong>Your link “Investor preview” shows v${d.sharedAt}.</strong> You've published v${d.rev} since.<br><button class="btn sm" data-act="updatelink">Update link to v${d.rev}</button></div></div>` : ""}
+      <div class="panel">
+        <h3>About this document</h3>
+        <dl class="facts-list">
+          <dt>Owner</dt><dd>${who(d.owner)}</dd>
+          <dt>Updated</dt><dd class="num">${d.age} days ago</dd>
+          <dt>Version</dt><dd class="num">v${d.rev}</dd>
+          <dt>Verified</dt><dd>${ver ? "Today, by you" : "Never"}</dd>
+          <dt>Last read</dt><dd>${d.viewed || "Never"}</dd>
+        </dl>
+        ${!ver ? `<button class="btn sm" style="margin-top:var(--s3)" data-act="verify">${icon("badge-check")}Mark as verified</button>` : ""}
+      </div>
+      <div class="panel">
+        <h3>Change it in Claude</h3>
+        <p class="xs muted" style="margin:6px 0 var(--s3)">Rooms keeps every version, so edits are safe.</p>
+        ${say(`Update “${d.title}” in ${r.name}: `)}
+      </div>
+    </aside>
+  </div>`;
+}
+
+function viewShares(){
+  currentNotes = "shares";
+  const links = [
+    { name:"Investor preview", doc:"1. Who We Serve", r:"strategy", s:"who-we-serve", mode:"Anyone with the link", ver:S.shareUpdated?6:4, cur:6, opens:14, last:"2 days ago" },
+    { name:"Design review", doc:"2. What We Sell", r:"strategy", s:"what-we-sell", mode:"Email to view", ver:1, cur:1, opens:3, last:"yesterday", live:true },
+  ];
+  return `${tip("shares")}
+  <div class="home-head"><div><h1>Shares</h1><p class="muted" style="margin-top:6px">Every link you've sent from Harbor & Pine. Open counts are sample data.</p></div></div>
+  <div class="panel" style="overflow:hidden"><table class="docs">
+    <thead><tr><th>Link</th><th class="hide-sm">Who can open</th><th>Version</th><th class="hide-sm">Opens</th><th></th></tr></thead>
+    <tbody>${links.map(l => `<tr data-href="#/doc/${l.r}/${l.s}">
+      <td><span class="title">${icon("link")}${l.name}</span><span class="xs muted">${l.doc}</span></td>
+      <td class="hide-sm muted">${l.mode}</td>
+      <td>${l.live ? `<span class="pill fresh">${icon("refresh-cw")}Always latest</span>` : l.ver < l.cur ? `<span class="pill aging">${icon("history")}v${l.ver} of v${l.cur}</span>` : `<span class="pill neutral">v${l.ver}</span>`}</td>
+      <td class="hide-sm num">${l.opens} · ${l.last}</td>
+      <td style="text-align:right;white-space:nowrap">${l.ver < l.cur && !l.live ? `<button class="btn sm" data-act="updatelink">Update</button> ` : ""}<button class="btn ghost sm" data-act="revoke">Revoke</button></td></tr>`).join("")}
+    </tbody></table></div>`;
+}
+
+function viewHealth(){
+  currentNotes = "health";
+  const docs = allDocs();
+  const unpub = docs.filter(d => d.published == null && !S.published[d.slug]);
+  const unver = docs.filter(d => (d.published != null || S.published[d.slug]) && !S.verified[d.slug]);
+  const unread = docs.filter(d => !d.viewed);
+  const block = (title, sub, items, act, label) => `
+    <section style="margin-top:var(--s5)"><div class="sec-h"><h2>${title}</h2><span class="xs muted num">${items.length}</span></div>
+    ${items.length ? `<ul class="list panel">${items.map(d => `<li><div class="row"><span class="ic">${icon("file-text")}</span><span class="grow"><a class="main-t" style="color:inherit" href="#/doc/${d.room.slug}/${d.slug}">${esc(d.title)}</a><br><span class="sub">${esc(d.room.name)} · owner ${who(d.owner)} · ${sub}</span></span><button class="btn sm" data-act="${act}" data-slug="${d.slug}">${label}</button></div></li>`).join("")}</ul>`
+    : `<div class="okbox">${icon("check-circle-2")}All clear.</div>`}</section>`;
+  return `${tip("health")}
+  <div class="home-head"><div><h1>Health</h1><p class="muted" style="margin-top:6px">What to fix so people can trust what they read.</p></div></div>
+  ${block("Never published", "readers can't see it", unpub, "publishslug", "Publish")}
+  ${block("Never verified", "no one has confirmed it's still true", unver, "verifyslug", "Verify")}
+  ${block("Never read", "published but nobody has opened it", unread, "remind", "Remind the team")}`;
+}
+
+function viewConnect(){
+  currentNotes = "connect";
+  return `<div style="max-width:640px">
+  <h1>Connect Claude</h1>
+  <p class="muted" style="margin-top:var(--s2)">Claude writes your documents. Rooms keeps them. This takes about a minute, and you only do it once.</p>
+  <div class="panel" style="padding:var(--s5);margin-top:var(--s5)">
+    <ol class="connect-steps">
+      <li><div><strong>Copy the connector address</strong>
+        <div class="linkbox" style="margin-top:var(--s2)"><code>https://mcp.rooms.engineering11.com/mcp</code><button class="btn sm" data-copy="https://mcp.rooms.engineering11.com/mcp">${icon("copy")}Copy</button></div></div></li>
+      <li><div><strong>In Claude, open Settings › Connectors › Add custom connector</strong><p class="xs muted" style="margin-top:2px">Paste the address and name it “Rooms”. On Team or Enterprise plans, an org admin may need to approve it.</p></div></li>
+      <li><div><strong>Sign in with your work email</strong><p class="xs muted" style="margin-top:2px">Use the same email you use here. Claude shows a 6-digit code.</p></div></li>
+      <li><div><strong>Say hello from Claude</strong><div style="margin-top:var(--s2)">${say("Which Rooms companies can I see?")}</div></div></li>
+    </ol>
+    <div style="margin-top:var(--s5);padding-top:var(--s4);border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;gap:var(--s3);flex-wrap:wrap">
+      <div class="status" id="connStatus">${S.setup.connect ? `<span style="color:var(--fresh);display:inline-flex;gap:6px;align-items:center">${icon("check-circle-2")}Claude is connected</span>` : `<span class="muted" style="display:inline-flex;gap:6px;align-items:center">${icon("circle-dashed")}Waiting to hear from Claude</span>`}</div>
+      ${S.setup.connect ? `<a class="btn primary" href="#/">Back to home</a>` : `<button class="btn primary" data-act="testconn">Check connection</button>`}
+    </div>
+  </div></div>`;
+}
+function notFound(){ return `<div class="panel empty"><h2>That page isn't here</h2><p>It may have moved or been archived.</p><a class="btn" href="#/">Go home</a></div>`; }
+
+/* ---------- drawers ---------- */
+function openDrawer(title, body, foot, notesKey){
+  $("#drawerTitle").textContent = title; $("#drawerBody").innerHTML = body; $("#drawerFoot").innerHTML = foot || "";
+  $("#drawer").classList.add("on"); $("#scrim").classList.add("on"); $("#drawer").setAttribute("aria-hidden","false");
+  if (notesKey) drawerNotes = notesKey;
+  lucide.createIcons();
+}
+let drawerNotes = null;
+function closeDrawer(){ $("#drawer").classList.remove("on"); $("#scrim").classList.remove("on"); $("#drawer").setAttribute("aria-hidden","true"); drawerNotes=null; }
+
+function openShare(d){
+  d = d || allDocs().find(x => x.slug === location.hash.split("/").pop().split("?")[0]);
+  openDrawer(`Share “${d.title}”`, `
+    <div class="choice-group" role="radiogroup" style="display:flex;flex-direction:column;gap:var(--s2)">
+      <label class="choice"><input type="radio" name="mode" value="link" checked><div>
+        <div class="t">${icon("link")}Anyone with the link</div>
+        <div class="d">Opens straight away, with no sign-in. Best for one-off sends.</div>
+        <div class="who"><span>${icon("mail-x")}No email needed</span><span>${icon("eye")}Opens are counted, not named</span></div></div></label>
+      <label class="choice"><input type="radio" name="mode" value="gate"><div>
+        <div class="t">${icon("at-sign")}Email to view <span class="pill neutral">New</span></div>
+        <div class="d">The reader types their email to open it. No code, no account. You see who read it.</div>
+        <div class="who"><span>${icon("mail")}Email, no code</span><span>${icon("user-check")}See who opened it</span></div></div></label>
+      <label class="choice"><input type="radio" name="mode" value="invite"><div>
+        <div class="t">${icon("door-open")}Invite to the room</div>
+        <div class="d">They can read everything in ${esc(d.room.name)}, not just this document.</div>
+        <div class="who"><span>${icon("key-round")}Work email and code</span><span>${icon("files")}Whole room</span></div></div></label>
+    </div>
+    <div class="field" id="nameField"><label for="lname">Name this link</label><input id="lname" type="text" placeholder="e.g. Jo at Acme, investor update"><span class="hint">Only you see the name. It shows in Shares next to the open count.</span></div>
+    <div class="field" id="emailField" hidden><label for="lemail">Their email</label><input id="lemail" type="email" placeholder="name@company.com"></div>
+    <div class="toggle"><div><div class="t">Keep showing the latest version</div><div class="d">Off: readers see v${d.rev} even after you publish changes.</div></div><input type="checkbox" class="switch" id="liveSw" checked aria-label="Keep showing the latest version"></div>
+    <div class="toggle"><div><div class="t">Stop working after 30 days</div><div class="d">You can turn a link off at any time in Shares.</div></div><input type="checkbox" class="switch" aria-label="Expire after 30 days"></div>
+    <div id="linkOut"></div>`,
+    `<button class="btn ghost" data-act="close">Cancel</button><button class="btn primary" data-act="mklink">${icon("link")}Create link</button>`, "share");
+  const upd = () => {
+    const m = document.querySelector('input[name=mode]:checked').value;
+    $("#emailField").hidden = m !== "invite"; $("#nameField").hidden = m === "invite";
+    $("#drawerFoot .primary").innerHTML = m === "invite" ? `${icon("send")}Send invite` : `${icon("link")}Create link`;
+    lucide.createIcons();
+  };
+  document.querySelectorAll('input[name=mode]').forEach(i => i.addEventListener("change", upd));
+}
+
+function openAsk(prefill){
+  drawerNotes = "ask";
+  let depth = "quick";
+  openDrawer("Search or ask", `
+    <div class="askin">${icon("search")}<input id="askq" placeholder="Search Harbor & Pine…" value="${esc(prefill||"")}" autocomplete="off"></div>
+    <div id="hits" style="display:flex;flex-direction:column;gap:var(--s2)"></div>
+    <div class="answer-cta" id="answerCta" hidden>
+      <div><strong class="small">Want a written answer instead?</strong>
+      <p class="xs muted" style="margin-top:2px">Rooms reads the documents above and answers with citations. Searching is free; answers count toward your company's monthly allowance.</p></div>
+      <div class="row2">
+        <div class="seg" role="group" aria-label="Answer depth"><button aria-pressed="true" data-depth="quick">Quick</button><button aria-pressed="false" data-depth="deep">Thorough · uses 3</button></div>
+        <button class="btn primary sm" data-act="answer">${icon("sparkles")}Get answer</button>
+      </div>
+      <div class="meter num" id="askMeter"></div>
+    </div>
+    <div id="answer"></div>`, "", "ask");
+  const q = $("#askq");
+  const meter = () => { $("#askMeter").innerHTML = `${S.quotaUsed} of ${QUOTA.limit} answers used this month<div class="bar"><i style="width:${S.quotaUsed/QUOTA.limit*100}%"></i></div>`; };
+  const run = () => {
+    const v = q.value.trim().toLowerCase();
+    $("#answer").innerHTML = "";
+    if (!v){ $("#hits").innerHTML = `<p class="xs muted">Results show as you type. Try “clinic”, “sell” or “field guide”.</p>`; $("#answerCta").hidden = true; return; }
+    const docs = allDocs().filter(d => (d.title + " " + d.room.name + " " + (BODY[d.slug]?.lede||"") + " brief clinic sell win guide handbook").toLowerCase().includes(v));
+    const hl = s => esc(s).replace(new RegExp(v.replace(/[.*+?^${}()|[\]\\]/g,"\\$&"), "ig"), m => `<mark>${m}</mark>`);
+    $("#hits").innerHTML = docs.length ? `<p class="xs muted num">${docs.length} document${docs.length>1?"s":""} · instant, no allowance used</p>` + docs.map(d => `<a class="hit" href="#/doc/${d.room.slug}/${d.slug}"><div class="t">${hl(d.title)}</div><div class="s">${esc(d.room.name)} · ${who(d.owner)} · ${d.age}d old</div></a>`).join("") : `<p class="small muted">No documents match “${esc(q.value)}”.</p>`;
+    $("#answerCta").hidden = !docs.length; meter();
+  };
+  q.addEventListener("input", run); run(); setTimeout(()=>q.focus(), 60);
+  $("#drawerBody").addEventListener("click", e => {
+    const b = e.target.closest("[data-depth]"); if (b){ depth = b.dataset.depth; document.querySelectorAll("[data-depth]").forEach(x => x.setAttribute("aria-pressed", x===b)); }
+    if (e.target.closest('[data-act="answer"]')){
+      const cost = depth === "deep" ? 3 : 1;
+      if (S.quotaUsed + cost > QUOTA.limit){ toast("Monthly answers used up. Search still works."); return; }
+      $("#answer").innerHTML = `<div class="answer"><span class="status muted">${icon("loader-2")}Reading 3 documents…</span></div>`; lucide.createIcons();
+      $("#answer .lucide")?.classList.add("spin");
+      setTimeout(() => {
+        S.quotaUsed += cost; save(); meter(); renderSide();
+        $("#answer").innerHTML = `<div class="answer">
+          <p>We help independent clinics fill their calendars without discounting<a class="cite" href="#/doc/strategy/who-we-serve">1</a>. The best-fit buyer runs two to six practitioners and already has a booking system<a class="cite" href="#/doc/strategy/who-we-serve">1</a>.</p>
+          <p>The handbook says every first call should start from the gap between full and empty days<a class="cite" href="#/doc/strategy/handbook">2</a>.</p>
+          <p class="xs muted" style="margin-top:var(--s3)">Sample answer for the prototype · ${depth==="deep"?"Thorough (Opus)":"Quick (smaller model)"} · used ${cost} of your allowance</p></div>`;
+      }, 1100);
+    }
+  });
+}
+
+function openNotes(){
+  const key = drawerNotes || currentNotes;
+  const list = NOTES[key] || [];
+  const was = drawerNotes;
+  openDrawer("Design notes", `<p class="small muted">What this screen changes compared with Rooms today, and why. For the design and build team.</p>
+    <div class="notes">${list.map(([t,p,w],i) => `<div class="note"><span class="n">${i+1}</span><div><div class="t">${t}</div><p>${p}</p>${w?`<div class="why">${w}</div>`:""}</div></div>`).join("")}</div>
+    <p class="xs muted">Other screens to try: a document's Share button, the search bar, Launch Plan (empty room), Health, Shares, Connect Claude.</p>`,
+    `<button class="btn" data-act="close">Close</button>`);
+  drawerNotes = was;
+}
+
+/* ---------- side + routing ---------- */
+function renderSide(){
+  const h = location.hash || "#/";
+  const needs = needsYou().length;
+  const item = (href, ic, label, extra="") => `<a href="${href}" ${ (href==="#/" ? h==="#/"||h==="" : h.startsWith(href)) ? 'aria-current="page"':""}>${icon(ic)}${label}${extra}</a>`;
+  $("#nav").innerHTML = item("#/","home","Home", needs?`<span class="count num">${needs}</span>`:"")
+    + `<span class="label">Rooms</span>` + DATA.rooms.map(r => item(`#/room/${r.slug}`, r.visibility==="Only invited people"?"lock":"door-closed", esc(r.name), `<span class="count num">${r.docs.length}</span>`)).join("")
+    + `<span class="label">Manage</span>` + item("#/shares","link","Shares", S.shareUpdated?"":`<span class="dot" title="A link is out of date"></span>`) + item("#/health","heart-pulse","Health");
+  $("#sideMeter").innerHTML = `<span class="num">${QUOTA.limit - S.quotaUsed} written answers left this month</span><div class="bar"><i style="width:${S.quotaUsed/QUOTA.limit*100}%"></i></div>`;
+  lucide.createIcons();
+}
+function render(){
+  const raw = (location.hash || "#/").slice(1);
+  const [path, qs] = raw.split("?");
+  const q = Object.fromEntries(new URLSearchParams(qs||""));
+  const parts = path.split("/").filter(Boolean);
+  let html, crumbs = [`<a href="#/">Harbor & Pine</a>`];
+  if (!parts.length) html = viewHome();
+  else if (parts[0]==="room"){ html = viewRoom(parts[1]); crumbs.push(esc(room(parts[1])?.name||"")); }
+  else if (parts[0]==="doc"){ html = viewDoc(parts[1], parts[2], q); const r=room(parts[1]); crumbs.push(`<a href="#/room/${parts[1]}">${esc(r?.name||"")}</a>`, esc(r?.docs.find(d=>d.slug===parts[2])?.title||"")); }
+  else if (parts[0]==="shares"){ html = viewShares(); crumbs.push("Shares"); }
+  else if (parts[0]==="health"){ html = viewHealth(); crumbs.push("Health"); }
+  else if (parts[0]==="connect"){ html = viewConnect(); crumbs.push("Connect Claude"); }
+  else html = notFound();
+  $("#page").innerHTML = html;
+  $("#crumbs").innerHTML = crumbs.join(icon("chevron-right"));
+  renderSide();
+  lucide.createIcons();
+  window.scrollTo(0,0);
+}
+window.addEventListener("hashchange", () => { closeDrawer(); render(); });
+
+/* ---------- actions ---------- */
+document.addEventListener("click", e => {
+  const s = e.target.closest("[data-say]");
+  if (s){ navigator.clipboard?.writeText(s.dataset.say); s.classList.add("copied"); s.querySelector(".c").innerHTML = icon("check"); lucide.createIcons(); toast("Copied. Paste it into Claude."); setTimeout(()=>{ s.classList.remove("copied"); s.querySelector(".c").innerHTML = icon("copy"); lucide.createIcons(); },1800); return; }
+  const c = e.target.closest("[data-copy]");
+  if (c){ navigator.clipboard?.writeText(c.dataset.copy); toast("Address copied"); return; }
+  const t = e.target.closest("[data-tip]");
+  if (t){ S.tipsSeen[t.dataset.tip] = true; save(); t.closest(".tip").remove(); return; }
+  const st = e.target.closest("[data-step]");
+  if (st){ S.setup[st.dataset.step] = true; save(); toast("Step done (simulated)"); render(); return; }
+  const tr = e.target.closest("tr[data-href]");
+  if (tr && !e.target.closest("button,a")){ location.hash = tr.dataset.href; return; }
+  const a = e.target.closest("[data-act]"); if (!a) return;
+  const act = a.dataset.act;
+  if (act==="close") closeDrawer();
+  if (act==="hidesetup"){ S.setupHidden = true; save(); render(); toast("Checklist hidden. Bring it back with Start over."); }
+  if (act==="share") openShare();
+  if (act==="openask") openAsk(document.querySelectorAll(".crumbs a")[1]?.textContent || "");
+  if (act==="verify"){ const slug = location.hash.split("/").pop(); S.verified[slug] = true; save(); render(); toast("Marked as verified. Readers will see it."); }
+  if (act==="verifyslug"){ S.verified[a.dataset.slug] = true; save(); render(); toast("Verified"); }
+  if (act==="publish"){ const slug = location.hash.split("/").pop(); S.published[slug] = true; save(); render(); toast("Published v1"); }
+  if (act==="publishslug"){ S.published[a.dataset.slug] = true; save(); render(); toast("Published v1"); }
+  if (act==="updatelink"){ S.shareUpdated = true; save(); render(); toast("Link now shows v6"); }
+  if (act==="revoke") toast("Link turned off (simulated)");
+  if (act==="remind") toast("Reminder sent to the room (simulated)");
+  if (act==="newroom") location.hash = "#/room/launch-plan";
+  if (act==="share-room") openDrawer("Invite to this room", `<div class="field"><label for="inv">Work email</label><input id="inv" type="email" placeholder="name@company.com"><span class="hint">They sign in with this email and a 6-digit code. To send one document without an invite, use Share on that document.</span></div>`, `<button class="btn ghost" data-act="close">Cancel</button><button class="btn primary" data-act="sendinvite">${icon("send")}Send invite</button>`);
+  if (act==="sendinvite"){ S.setup.invite = true; save(); closeDrawer(); toast("Invite sent (simulated)"); render(); }
+  if (act==="mklink"){
+    const m = document.querySelector('input[name=mode]:checked').value;
+    S.setup.share = true; save();
+    if (m==="invite"){ closeDrawer(); toast("Invite sent (simulated)"); render(); return; }
+    $("#linkOut").innerHTML = `<div class="okbox">${icon("check-circle-2")}<span>Link ready. ${m==="gate"?"Readers will be asked for their email.":"Anyone with it can open this document."}</span></div>
+      <div class="linkbox" style="margin-top:var(--s2)"><code>rooms.engineering11.com/s/k7Qm2x</code><button class="btn sm" data-copy="https://rooms.engineering11.com/s/k7Qm2x">${icon("copy")}Copy</button></div>`;
+    $("#drawerFoot").innerHTML = `<a class="btn" href="#/shares">See all shares</a><button class="btn primary" data-act="close">Done</button>`;
+    lucide.createIcons();
+  }
+  if (act==="testconn"){
+    $("#connStatus").innerHTML = `<span class="muted" style="display:inline-flex;gap:6px;align-items:center">${icon("loader-2")}Checking…</span>`; lucide.createIcons(); $("#connStatus .lucide").classList.add("spin");
+    setTimeout(() => { S.setup.connect = true; save(); render(); toast("Claude is connected"); }, 1200);
+  }
+});
+$("#scrim").addEventListener("click", closeDrawer);
+$("#drawerClose").addEventListener("click", closeDrawer);
+$("#openAsk").addEventListener("click", () => openAsk(""));
+$("#notesBtn").addEventListener("click", openNotes);
+$("#resetBtn").addEventListener("click", () => { localStorage.removeItem(KEY); S = load(); closeDrawer(); location.hash = "#/"; render(); toast("Reset: you're a new user again"); });
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape") closeDrawer();
+  if (e.key === "/" && !/input|textarea/i.test(document.activeElement.tagName)){ e.preventDefault(); openAsk(""); }
+});
+render();
+</script>
+</body>
+</html>
